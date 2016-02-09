@@ -3,6 +3,8 @@
 # Substitute variables in config file.
 /bin/sed -i "s/{{VIRTUAL_IP}}/${VIRTUAL_IP}/" /etc/keepalived/keepalived.conf
 /bin/sed -i "s/{{CHECK_PORT}}/${CHECK_PORT}/" /etc/keepalived/keepalived.conf
+/bin/sed -i "s/{{VRID}}/${VRID}/" /etc/keepalived/keepalived.conf
+/bin/sed -i "s/{{INTERFACE}}/${INTERFACE}/" /etc/keepalived/keepalived.conf
 
 # Make sure we react to these signals by running stop() when we see them - for clean shutdown
 # And then exiting
@@ -13,10 +15,32 @@ stop()
   # We're here because we've seen SIGTERM, likely via a Docker stop command or similar
   # Let's shutdown cleanly
   echo "SIGTERM caught, terminating keepalived process..."
-  kill -TERM $(pidof keepalived) > /dev/null 2>&1
-  sleep 1
+  # Record PIDs
+  pid=$(pidof keepalived)
+  # Kill them
+  kill -TERM $pid > /dev/null 2>&1
+  # Wait till they have been killed
+  wait $pid
   echo "Terminated."
+  exit 0
 }
+
+#Make sure the variables we need to run are populated and (roughly) valid
+
+if ! [[ $VIRTUAL_IP =~ ^(([0-9]|[1-9][0-9]|1[0-9]{2}|2[0-2][0-3])\.){3}([0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5])$ ]]; then
+  echo "The VIRTUAL_IP environment variable is null or not a valid IP address, exiting..."
+  exit 1
+fi
+
+if ! [[ $VRID =~ ^([1-9]|[1-9][0-9]|[1-2][0-5][0-5])$ ]]; then
+  echo "The VRID environment variable is null or not a number between 1 and 255, exiting..."
+  exit 1
+fi
+
+if ! [[ $INTERFACE =~ ^.*[0-9]$ ]]; then
+  echo "The INTERFACE environment variable is null or doesn't end in a number, exiting..."
+  exit 1
+fi
 
 # This loop runs till until we've started up successfully
 while true; do
@@ -51,20 +75,8 @@ while true; do
 
 done
 
-while true; do
-
-  # Check if Keepalived is STILL running by recording it's PID (if it's not running $pid will be null):
-  pid=$(pidof keepalived)
-  # If it is not, lets kill our PID1 process (this script) by breaking out of this while loop:
-  # This ensures Docker and Rancher 'see' the failure and handle it as necessary
-  if [ -z "$pid" ]; then
-    echo "Keepalived has failed, exiting, so Rancher can restart the container..."
-    break
-  fi
-
-  # If it is, give the CPU a rest
-  sleep 0.5
-
-done
-sleep 1
-exit 0
+# Wait until the Keepalived processes stop (for some reason)
+wait $pid
+echo "The Keepalived process is no longer running, exiting..."
+# Exit with an error
+exit 1
