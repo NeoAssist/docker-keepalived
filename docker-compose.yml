@@ -5,6 +5,8 @@ keepalived:
   environment:
     - VIRTUAL_IP=172.17.8.150
     - CHECK_PORT=80
+    - VRID=150
+    - INTERFACE=eth0
   tty: true
   build: docker-keepalived
   stdin_open: true
