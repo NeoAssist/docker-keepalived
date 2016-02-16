@@ -32,7 +32,7 @@ if ! [[ $VIRTUAL_IP =~ ^(([0-9]|[1-9][0-9]|1[0-9]{2}|2[0-2][0-3])\.){3}([0-9]|[1
   exit 1
 fi
 
-if ! [[ $VRID =~ ^([1-9]|[1-9][0-9]|[1-2][0-5][0-5])$ ]]; then
+if ! [[ $VRID =~ ^([1-9]|[1-9][0-9]|1[0-9][0-9]|2[0-5][0-5])$ ]]; then
   echo "The VRID environment variable is null or not a number between 1 and 255, exiting..."
   exit 1
 fi
