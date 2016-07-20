@@ -1,5 +1,5 @@
 # docker-keepalived
----
+
 ## What is This?
 
 A Dockerized Keepalived designed for simple high availability (HA) in multi-host container deployments. [Keepalived](http://www.keepalived.org/) provides failover for one or more Virtual IP addresses (VIPs) so they are always available, even if a host fails.
@@ -8,7 +8,14 @@ It has been designed specifically for use within [Rancher](http://rancher.com/) 
 
 ## Services & Address Binding
 
-HAProxy (and most other listening services) won't bind to an address that doesn't exist within the host's network stack. If any particular host  which .  This can cause a problem when the keepalived healthchecks run, as they look for the servie responding on the virtual ip.  In order to solve this, you can either configure HAProxy without an address (so it binds to all of them) with bind :80 for instance, or, the suggested use: enable HAProxy to bind to non-existent addresses by enabling the net.ipv4.ip_nonlocal_bind kernel setting.
+HAProxy (and most other listening services) won't bind to an address that doesn't exist within the host's network stack. As Keepalived will only host any particular VIP on a single host, the service(s) on the remaining ones will not be able to bind to the VIP address and will likely fail. Keepalived on those hosts will also fail as it is performing a health check on the service itself (by checking for a listener on the VIP address and a service port you specify). 
+
+In order to avoid this issue, you can either;
+- Configure HAProxy (or whatever service you are using) without an address (so it binds to all of them) with, for example;
+ - `bind :80`
+ - `bind *:80`
+ - `bind 0.0.0.0:80`
+- Enable binding to non-existent addresses by setting the `net.ipv4.ip_nonlocal_bind` kernel parameter to 1
 
 Information on how to enable the kernel option:
 - Debian/Ubuntu should work simply by
