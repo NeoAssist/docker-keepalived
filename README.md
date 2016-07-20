@@ -1,12 +1,14 @@
 # docker-keepalived
-Dockerized keepalived to ease HA in deployments with multiple hosts.  Provides failover for Virtual IPs (VIP) to be always online even if a host fails.
+---
+## What is This?
 
-It is being designed specifically for use with Rancher environments, but should probably work on most types of multi-machine deployments that require
-HA and IP Failover.
+A Dockerized Keepalived designed for simple high availability (HA) in multi-host container deployments. [Keepalived](http://www.keepalived.org/) provides failover for one or more Virtual IP addresses (VIPs) so they are always available, even if a host fails.
 
-# Some "gotchas" for correct usage
+It has been designed specifically for use within [Rancher](http://rancher.com/) environments using HAProxy 'front ends', but should work with most types of multi-host container deployments that require HA and IP address failover for any kind of listening service (Apache, Nginx etc.).
 
-HAProxy (and most other services) won't bind to an address that doesn't exist.  This can cause a problem when the keepalived healthchecks run, as they look for the servie responding on the virtual ip.  In order to solve this, you can either configure HAProxy without an address (so it binds to all of them) with bind :80 for instance, or, the suggested use: enable HAProxy to bind to non-existent addresses by enabling the net.ipv4.ip_nonlocal_bind kernel setting.
+## Services & Address Binding
+
+HAProxy (and most other listening services) won't bind to an address that doesn't exist within the host's network stack. If any particular host  which .  This can cause a problem when the keepalived healthchecks run, as they look for the servie responding on the virtual ip.  In order to solve this, you can either configure HAProxy without an address (so it binds to all of them) with bind :80 for instance, or, the suggested use: enable HAProxy to bind to non-existent addresses by enabling the net.ipv4.ip_nonlocal_bind kernel setting.
 
 Information on how to enable the kernel option:
 - Debian/Ubuntu should work simply by
