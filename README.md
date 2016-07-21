@@ -1,6 +1,6 @@
 # docker-keepalived
-
-## What is This?
+---
+## Purpose
 
 A Dockerized Keepalived designed for simple high availability (HA) in multi-host container deployments. [Keepalived](http://www.keepalived.org/) provides failover for one or more Virtual IP addresses (VIPs) so they are always available, even if a host fails.
 
@@ -16,6 +16,7 @@ In order to avoid this issue, you can either;
  - `bind :80`
  - `bind *:80`
  - `bind 0.0.0.0:80`
+
 - Enable binding to non-existent addresses by setting the `net.ipv4.ip_nonlocal_bind` kernel parameter to 1
 
 ### Enabling Non-local Binding - Most Distros
