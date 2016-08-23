@@ -25,7 +25,13 @@ stop()
   exit 0
 }
 
-#Make sure the variables we need to run are populated and (roughly) valid
+# Make sure to clean up VIP before start (in case of ungraceful shutdown)
+if [[ $(ip addr | grep $INTERFACE | grep $VIRTUAL_IP) ]]
+  then
+    ip addr del $VIRTUAL_IP/24 dev $INTERFACE
+fi
+
+# Make sure the variables we need to run are populated and (roughly) valid
 
 if ! [[ $VIRTUAL_IP =~ ^(([0-9]|[1-9][0-9]|1[0-9]{2}|2[0-2][0-3])\.){3}([0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5])$ ]]; then
   echo "The VIRTUAL_IP environment variable is null or not a valid IP address, exiting..."
