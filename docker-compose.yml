@@ -4,6 +4,8 @@ keepalived:
     io.rancher.scheduler.global: 'true'
   environment:
     - VIRTUAL_IP=172.17.8.150
+    - VIRTUAL_MASK=24
+    - CHECK_IP=any
     - CHECK_PORT=80
     - VRID=150
     - INTERFACE=eth0
