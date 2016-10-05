@@ -58,6 +58,12 @@ Use this command: `#/bin/sh -c "/usr/sbin/sysctl -w net.ipv4.ip_nonlocal_bind=1`
 
 **This is still a work in progress, constantly being changed and probably not ready, even for any real testing...**
 
+## Health Checks
+
+If you'd like the health check to only check for something listening on a specified port, rather than an address and port, you can set the CHECK_IP variable value to `any`.
+
+If you do want to check the address and port combination, set the CHECK_IP variable to the same value as the VIRTUAL_IP variable.
+
 ##Thanks & Inspiration
 
 This has come to be as a result of a discussion held on the Rancher Forums (https://forums.rancher.com/t/rancher-keepalived/1508/16).
