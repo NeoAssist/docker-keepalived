@@ -34,7 +34,7 @@ if ! [[ $VIRTUAL_IP =~ ^(([1-9]|[1-9][0-9]|1[0-9]{2}|2[0-5][0-5])\.){3}([1-9]|[1
   exit 1
 fi
 
-if ! [[ $VIRTUAL_MASK =~ ^([1-9]|[1-3][0-2])$ ]]; then
+if ! [[ $VIRTUAL_MASK =~ ^([0-9]|[1-2][0-9]|3[0-2])$ ]]; then
   echo "The VIRTUAL_MASK environment variable is null or not a valid subnet mask, exiting..."
   exit 1
 fi
