@@ -1,7 +1,7 @@
-FROM alpine:latest
+FROM alpine:edge
 
 
-RUN echo "http://nl.alpinelinux.org/alpine/edge/testing" >> /etc/apk/repositories && apk --update -t add keepalived iproute2 grep bash tcpdump sed && rm -f /var/cache/apk/* /tmp/*
+RUN apk --update -t add keepalived iproute2 grep bash tcpdump sed && rm -f /var/cache/apk/* /tmp/*
 
 
 COPY keepalived.sh /usr/bin/keepalived.sh
