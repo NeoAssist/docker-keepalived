@@ -1,4 +1,4 @@
-FROM alpine:latest
+FROM alpine:3.4
 
 RUN echo "http://nl.alpinelinux.org/alpine/edge/community" >> /etc/apk/repositories && \
     echo "http://nl.alpinelinux.org/alpine/edge/main" >> /etc/apk/repositories && \
