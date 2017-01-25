@@ -5,11 +5,13 @@ if [ -z "$AUTH_PASS" ]; then
 fi
 
 # Substitute variables in config file.
-/bin/sed -i "s/{{VIRTUAL_IP}}/${VIRTUAL_IP}/" /etc/keepalived/keepalived.conf
-/bin/sed -i "s/{{CHECK_PORT}}/${CHECK_PORT}/" /etc/keepalived/keepalived.conf
-/bin/sed -i "s/{{VRID}}/${VRID}/" /etc/keepalived/keepalived.conf
+/bin/sed -i "s/{{VIRTUAL_IP}}/${VIRTUAL_IP}/g" /etc/keepalived/keepalived.conf
+/bin/sed -i "s/{{VIRTUAL_MASK}}/${VIRTUAL_MASK}/g" /etc/keepalived/keepalived.conf
+/bin/sed -i "s/{{CHECK_IP}}/${CHECK_IP}/g" /etc/keepalived/keepalived.conf
+/bin/sed -i "s/{{CHECK_PORT}}/${CHECK_PORT}/g" /etc/keepalived/keepalived.conf
+/bin/sed -i "s/{{VRID}}/${VRID}/g" /etc/keepalived/keepalived.conf
+/bin/sed -i "s/{{INTERFACE}}/${INTERFACE}/g" /etc/keepalived/keepalived.conf
 /bin/sed -i "s/{{AUTH_PASS}}/${AUTH_PASS}/" /etc/keepalived/keepalived.conf
-/bin/sed -i "s/{{INTERFACE}}/${INTERFACE}/" /etc/keepalived/keepalived.conf
 
 # Make sure we react to these signals by running stop() when we see them - for clean shutdown
 # And then exiting
@@ -30,10 +32,15 @@ stop()
   exit 0
 }
 
-#Make sure the variables we need to run are populated and (roughly) valid
+# Make sure the variables we need to run are populated and (roughly) valid
 
-if ! [[ $VIRTUAL_IP =~ ^(([0-9]|[1-9][0-9]|1[0-9]{2}|2[0-2][0-3])\.){3}([0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5])$ ]]; then
+if ! [[ $VIRTUAL_IP =~ ^(([1-9]|[1-9][0-9]|1[0-9]{2}|2[0-2][0-3])\.)(([0-9]|[1-9][0-9]|1[0-9]{2}|2[0-5][0-5])\.){2}([1-9]|[1-9][0-9]|1[0-9]{2}|2[0-5][0-5])$ ]]; then
   echo "The VIRTUAL_IP environment variable is null or not a valid IP address, exiting..."
+  exit 1
+fi
+
+if ! [[ $VIRTUAL_MASK =~ ^([0-9]|[1-2][0-9]|3[0-2])$ ]]; then
+  echo "The VIRTUAL_MASK environment variable is null or not a valid subnet mask, exiting..."
   exit 1
 fi
 
@@ -42,6 +49,7 @@ if ! [[ $VRID =~ ^([1-9]|[1-9][0-9]|1[0-9][0-9]|2[0-5][0-5])$ ]]; then
   exit 1
 fi
 
+# Possibly some interfaces are named and don't end in a number so beware of this one
 if ! [[ $INTERFACE =~ ^.*[0-9]$ ]]; then
   echo "The INTERFACE environment variable is null or doesn't end in a number, exiting..."
   exit 1
@@ -49,6 +57,12 @@ fi
 
 if [ "$AUTH_PASS" == "changeme" ]; then
   echo "WARNING: You should change the authentication passsword variable AUTH_PASS for security reasons."
+fi
+
+# Make sure to clean up VIP before start (in case of ungraceful shutdown)
+if [[ $(ip addr | grep $INTERFACE | grep $VIRTUAL_IP) ]]
+  then
+    ip addr del $VIRTUAL_IP/$VIRTUAL_MASK dev $INTERFACE
 fi
 
 # This loop runs till until we've started up successfully
