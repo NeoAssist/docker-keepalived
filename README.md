@@ -72,7 +72,13 @@ If you'd like the health check to only check for something listening on a specif
 
 If you do want to check the address and port combination, set the CHECK_IP variable to the same value as the VIRTUAL_IP variable.
 
-##Thanks & Inspiration
+Note that due to the way Rancher works, you cannot perform a port check for another Rancher service which has a port mapped/bound to/from the host. This won't show up in the output of the `ss` or `netstat` commands.
+
+If you plan on using some other kind of health check which relies on the ability to use DNS names for another rancher service, ensure you add the `io.rancher.container.dns` label to this service's compose definition and set it's value to `'true'`. To overcome this;
+- Switch to a different kind of monitor, such as a HTTP check.
+- Configure the other service to use host mode.
+
+## Thanks & Inspiration
 
 This has come to be as a result of a discussion held on the Rancher Forums (https://forums.rancher.com/t/rancher-keepalived/1508/16).
 
