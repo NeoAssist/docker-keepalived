@@ -1,5 +1,9 @@
 #!/bin/bash
 
+if [ -z "$AUTH_PASS" ]; then
+  AUTH_PASS="changeme"
+fi
+
 # Substitute variables in config file.
 /bin/sed -i "s/{{VIRTUAL_IP}}/${VIRTUAL_IP}/g" /etc/keepalived/keepalived.conf
 /bin/sed -i "s/{{VIRTUAL_MASK}}/${VIRTUAL_MASK}/g" /etc/keepalived/keepalived.conf
@@ -7,6 +11,7 @@
 /bin/sed -i "s/{{CHECK_PORT}}/${CHECK_PORT}/g" /etc/keepalived/keepalived.conf
 /bin/sed -i "s/{{VRID}}/${VRID}/g" /etc/keepalived/keepalived.conf
 /bin/sed -i "s/{{INTERFACE}}/${INTERFACE}/g" /etc/keepalived/keepalived.conf
+/bin/sed -i "s/{{AUTH_PASS}}/${AUTH_PASS}/" /etc/keepalived/keepalived.conf
 
 # Make sure we react to these signals by running stop() when we see them - for clean shutdown
 # And then exiting
@@ -48,6 +53,10 @@ fi
 if ! [[ $INTERFACE =~ ^.*[0-9]$ ]]; then
   echo "The INTERFACE environment variable is null or doesn't end in a number, exiting..."
   exit 1
+fi
+
+if [ "$AUTH_PASS" == "changeme" ]; then
+  echo "WARNING: You should change the authentication passsword variable AUTH_PASS for security reasons."
 fi
 
 # Make sure to clean up VIP before start (in case of ungraceful shutdown)
