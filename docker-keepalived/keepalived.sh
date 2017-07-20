@@ -1,10 +1,18 @@
 #!/bin/bash
 
+# Setup check script
+if [[ -z ${CHECK_SCRIPT} ]]; then
+  if [[ -z ${CHECK_IP} ]] || [[ ${CHECK_IP} = 'any' ]]; then
+    CHECK_SCRIPT="iptables -t nat -nL CATTLE_PREROUTING | grep ':${CHECK_PORT}'"
+  else
+    CHECK_SCRIPT="iptables -nL | grep '${CHECK_IP}' && iptables -t nat -nL CATTLE_PREROUTING | grep ':${CHECK_PORT}'"
+  fi
+fi
+
 # Substitute variables in config file.
 /bin/sed -i "s/{{VIRTUAL_IP}}/${VIRTUAL_IP}/g" /etc/keepalived/keepalived.conf
 /bin/sed -i "s/{{VIRTUAL_MASK}}/${VIRTUAL_MASK}/g" /etc/keepalived/keepalived.conf
-/bin/sed -i "s/{{CHECK_IP}}/${CHECK_IP}/g" /etc/keepalived/keepalived.conf
-/bin/sed -i "s/{{CHECK_PORT}}/${CHECK_PORT}/g" /etc/keepalived/keepalived.conf
+/bin/sed -i "s/{{CHECK_SCRIPT}}/${CHECK_SCRIPT}/g" /etc/keepalived/keepalived.conf
 /bin/sed -i "s/{{VRID}}/${VRID}/g" /etc/keepalived/keepalived.conf
 /bin/sed -i "s/{{INTERFACE}}/${INTERFACE}/g" /etc/keepalived/keepalived.conf
 
