@@ -8,7 +8,7 @@ It has been designed specifically for use within [Rancher](http://rancher.com/) 
 
 ## Services & Address Binding
 
-HAProxy (and most other listening services) won't bind to an address that doesn't exist within the host's network stack. As Keepalived will only host any particular VIP on a single host, the service(s) on the remaining ones will not be able to bind to the VIP address and will likely fail. Keepalived on those hosts will also fail as it is performing a health check on the service itself (by checking for a listener on the VIP address and the service port you specify). 
+HAProxy (and most other listening services) won't bind to an address that doesn't exist within the host's network stack. As Keepalived will only host any particular VIP on a single host, the service(s) on the remaining ones will not be able to bind to the VIP address and will likely fail. Keepalived on those hosts will also fail as it is performing a health check on the service itself (by checking for a listener on the VIP address and the service port you specify).
 
 In order to avoid this issue, you can either;
 
@@ -39,7 +39,7 @@ If your not using the default console, see the prior section for Most Distros. I
 If you don't already have a **/opt/rancher/bin/start.sh** startup file, edit the **/var/lib/rancher/conf/cloud-config.d/user_config.yml** file and add this to it to create a suitable file which will run the `sysctl -p` command:
 ```
 write_files:
-  - encoding: b64 
+  - encoding: b64
     content: IyEvYmluL3NoCnN5c2N0bCAtcApleGl0Cg==
     owner: root:root
     path: /opt/rancher/bin/start.sh
@@ -50,7 +50,7 @@ If you do already have this file, add the `sysctl -p` command to it.
 In either case, add this to the end of the **/var/lib/rancher/conf/cloud-config.d/user_config.yml** file to create a suitable **/etc/sysctl.conf** file:
 ```
 write_files:
-  - encoding: b64 
+  - encoding: b64
     content: bmV0LmlwdjQuY29uZi5hbGwuYXJwX2FjY2VwdCA9IDEgCm5ldC5pcHY0LmlwX25vbmxvY2FsX2JpbmQgPSAxIApuZXQuaXB2NC5jb25mLmFsbC5wcm9tb3RlX3NlY29uZGFyaWVzID0gMQo=
     owner: root:root
     path: /etc/sysctl.conf
@@ -61,22 +61,24 @@ Reboot to have the files written and executed.
 ### Enabling Non-local Binding - CoreOS
 
 Use this command: `#/bin/sh -c "/usr/sbin/sysctl -w net.ipv4.ip_nonlocal_bind=1` or add this to a unit file with a oneshot execution.
-  
+
 *Other distributions may have slightly different commands or syntax...google is your friend!*
 
 **This is still a work in progress, constantly being changed and probably not ready, even for any real testing...**
 
 ## Health Checks
 
-If you'd like the health check to only check for something listening on a specified port, rather than an address and port, you can set the CHECK_IP variable value to `any`.
+If you'd like the health check to only check for something listening on a specified port, rather than an address and port, only set the CHECK_PORT variable, not the CHECK_IP variable.
 
 If you do want to check the address and port combination, set the CHECK_IP variable to the same value as the VIRTUAL_IP variable.
 
-Note that due to the way Rancher works, you cannot perform a port check for another Rancher service which has a port mapped/bound to/from the host. This won't show up in the output of the `ss` or `netstat` commands. To overcome this;
+If you want to use your own custom script, set the CHECK_SCRIPT variable.
+
+If using a custom script, note that due to the way Rancher works, you cannot perform a port check for another Rancher service which has a port mapped/bound to/from the host. This won't show up in the output of the `ss` or `netstat` commands. To overcome this;
 - Switch to a different kind of monitor, such as a HTTP check.
 - Configure the other service to use host mode.
 
-If you plan on using some other kind of health check which relies on the ability to use DNS names to connect to another Rancher service, ensure you add the `io.rancher.container.dns` label to this service's compose definition and set it's value to `'true'`. 
+If you plan on using some other kind of health check which relies on the ability to use DNS names to connect to another Rancher service, ensure you add the `io.rancher.container.dns` label to this service's compose definition and set it's value to `'true'`.
 
 ## Thanks & Inspiration
 
