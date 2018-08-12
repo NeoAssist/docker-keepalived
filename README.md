@@ -80,6 +80,12 @@ If using a custom script, note that due to the way Rancher works, you cannot per
 
 If you plan on using some other kind of health check which relies on the ability to use DNS names to connect to another Rancher service, ensure you add the `io.rancher.container.dns` label to this service's compose definition and set it's value to `'true'`.
 
+## Status Checking
+
+You can check the status of Keepalived by opening an interactive shell in the container and typing `status`. This is an alias for `pidof keepalived | kill -s USR1; cat /tmp/keepalived.data`. As you can surmise, sending the USR1 signal to the keepalived process causes it to write a status file to **/tmp/keepalived**.
+
+You can also confirm Keepalived is running on any particular host by confirming a process is listening on protocol number 112 with command `ss -lwn`. You can confirm that process is keepalived with `sudo ss -lwnp`.
+
 ## Thanks & Inspiration
 
 This has come to be as a result of a discussion held on the Rancher Forums (https://forums.rancher.com/t/rancher-keepalived/1508/16).
