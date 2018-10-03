@@ -86,6 +86,14 @@ You can check the status of Keepalived by opening an interactive shell in the co
 
 You can also confirm Keepalived is running on any particular host by confirming a process is listening on protocol number 112 with command `ss -lwn`. You can confirm that process is keepalived with `sudo ss -lwnp`.
 
+## Using the Docker Run Command
+
+If you'd like to quickly test the built image at the CLI using the `docker run` command, something like this will work:
+
+```
+docker run -d --privileged --net host --name keepalived -e VIRTUAL_IP=10.11.12.99 -e CHECK_PORT=443 -e VIRTUAL_MASK=24 -e VRID=99 -e INTERFACE=eht0 docker-keepalived
+```
+
 ## Thanks & Inspiration
 
 This has come to be as a result of a discussion held on the Rancher Forums (https://forums.rancher.com/t/rancher-keepalived/1508/16).
