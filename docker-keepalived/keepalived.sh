@@ -29,8 +29,9 @@ stop()
   pid=$(pidof keepalived)
   # Kill them
   kill -TERM $pid > /dev/null 2>&1
-  # Wait till they have been killed
-  wait $pid
+  # Wait until processes have been killed.
+  # Use 'wait $pid' instead if you dislike using sleep (the wait command has less OS support)
+  sleep 1
   echo "Terminated."
   exit 0
 }
@@ -97,8 +98,20 @@ while true; do
 
 done
 
-# Wait until the Keepalived processes stop (for some reason)
-wait $pid
-echo "The Keepalived process is no longer running, exiting..."
-# Exit with an error
+while true; do
+
+  # Check if Keepalived is STILL running by recording it's PID (if it's not running $pid will be null):
+  pid=$(pidof keepalived)
+  # If it is not, lets kill our PID1 process (this script) by breaking out of this while loop:
+  # This ensures Docker 'sees' the failure and handles it as necessary
+  if [ -z "$pid" ]; then
+    echo "Keepalived is no longer running, exiting so Docker can restart the container..."
+    break
+  fi
+
+  # If it is, give the CPU a rest
+  sleep 0.5
+
+done
+
 exit 1
