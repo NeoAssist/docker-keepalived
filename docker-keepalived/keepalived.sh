@@ -9,12 +9,48 @@ if [[ -z ${CHECK_SCRIPT} ]]; then
   fi
 fi
 
+validate-ip ()
+{
+  if ! [[ $1 =~ ^(([1-9]|[1-9][0-9]|1[0-9]{2}|2[0-2][0-3])\.)(([0-9]|[1-9][0-9]|1[0-9]{2}|2[0-5][0-5])\.){2}([1-9]|[1-9][0-9]|1[0-9]{2}|2[0-5][0-5])$ ]]; then
+    echo "The $2 environment variable is null or not a valid IP address, exiting..."
+    exit 1
+  fi
+}
+
 # Substitute variables in config file.
 /bin/sed -i "s/{{VIRTUAL_IP}}/${VIRTUAL_IP}/g" /etc/keepalived/keepalived.conf
+if [[ -z ${STATE} ]]; then
+  /bin/sed -i "s/{{STATE}}/BACKUP/g" /etc/keepalived/keepalived.conf
+else
+  /bin/sed -i "s/{{STATE}}/${STATE}/g" /etc/keepalived/keepalived.conf
+fi
+if [[ -z ${PRIORITY} ]]; then
+  /bin/sed -i "s/{{PRIORITY}}/100/g" /etc/keepalived/keepalived.conf
+else
+  /bin/sed -i "s/{{PRIORITY}}/${PRIORITY}/g" /etc/keepalived/keepalived.conf
+fi
+
+if [[ -z ${ADVERT_INT} ]]; then
+  /bin/sed -i "s/{{ADVERT_INT}}/1/g" /etc/keepalived/keepalived.conf
+else
+  /bin/sed -i "s/{{ADVERT_INT}}/${ADVERT_INT}/g" /etc/keepalived/keepalived.conf
+fi
+
 /bin/sed -i "s/{{VIRTUAL_MASK}}/${VIRTUAL_MASK}/g" /etc/keepalived/keepalived.conf
 /bin/sed -i "s/{{CHECK_SCRIPT}}/${CHECK_SCRIPT}/g" /etc/keepalived/keepalived.conf
 /bin/sed -i "s/{{VRID}}/${VRID}/g" /etc/keepalived/keepalived.conf
 /bin/sed -i "s/{{INTERFACE}}/${INTERFACE}/g" /etc/keepalived/keepalived.conf
+if [[ -z ${UNICAST_SRC_IP} ]]; then
+  /bin/sed -i "/unicast_src_ip/d" /etc/keepalived/keepalived.conf
+else
+  /bin/sed -i "s/{{UNICAST_SRC_IP}}/${UNICAST_SRC_IP}/g" /etc/keepalived/keepalived.conf
+fi
+# unicast peers
+for peer in ${UNICAST_PEERS}; do
+  validate-ip ${peer} 'UNICAST_PEERS'
+  /bin/sed -i "s/{{UNICAST_PEERS}}/${peer}\n            {{UNICAST_PEERS}}/g" /etc/keepalived/keepalived.conf
+done
+/bin/sed -i "/{{UNICAST_PEERS}}/d" /etc/keepalived/keepalived.conf
 
 # Make sure we react to these signals by running stop() when we see them - for clean shutdown
 # And then exiting
@@ -38,10 +74,8 @@ stop()
 
 # Make sure the variables we need to run are populated and (roughly) valid
 
-if ! [[ $VIRTUAL_IP =~ ^(([1-9]|[1-9][0-9]|1[0-9]{2}|2[0-2][0-3])\.)(([0-9]|[1-9][0-9]|1[0-9]{2}|2[0-5][0-5])\.){2}([1-9]|[1-9][0-9]|1[0-9]{2}|2[0-5][0-5])$ ]]; then
-  echo "The VIRTUAL_IP environment variable is null or not a valid IP address, exiting..."
-  exit 1
-fi
+validate-ip $VIRTUAL_IP 'VIRTUAL_IP'
+
 
 if ! [[ $VIRTUAL_MASK =~ ^([0-9]|[1-2][0-9]|3[0-2])$ ]]; then
   echo "The VIRTUAL_MASK environment variable is null or not a valid subnet mask, exiting..."
